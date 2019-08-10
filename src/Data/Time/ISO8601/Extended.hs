@@ -22,34 +22,34 @@ This is because, for instance, ordinal and weekly dates can be computed from cal
 In order to relate these functions to ISO 8601-1, two classes, one for each profile level, are provided.
 Instances of these will have a 1 or 2 appended to them as appropriate.
 -}
-{-# OPTIONS_HADDOCK prune #-} 
 
-module Data.Time.ISO8601.Extended (
-    module Data.Time.ISO8601.Extended.Internal
-  , module Data.Time.ISO8601.Extended.Parse
-  ) where
+module Data.Time.ISO8601.Extended
+  ( ISO8601Profile1 (..)
+  , ISO8601Profile2 (..)
+  , Provenance (..)
+  , _provenanceOf
+  , NominalDate' (..)
+  , NominalDate1 (..)
+  , NominalDate2 (..)
+  , Unspecified (..)
+  , UnspecifiedDate1 (..)
+  , UnspecifiedDate2 (..)
+  , BeforeOrAfter (..)
+  , BeforeOrAfter2 (..)
+  , Context (..)
+  , Interval1 (..)
+  , Interval2 (..)
+  , Context' (..)
+  , Year1 (..)
+  , Year2 (..)
+  , SignificandYear2 (..)
+  , Season (..)
+  , YearDivision1 (..)
+  , YearDivision2 (..)
+  , SetOfDates2 (..)
+  , Decade2 (..)
 
-import Data.Time.ISO8601.Extended.Internal hiding
-  ( Anno (..)
-  , combine
-  , compareAnno
-  , collapsePrefix
-  , shiftLeft
-  , Annotation (..)
-  , toProvenance
-  , fromProvenance
-  , padAnnotation
-  , toNominalDate2
-  , toNominalDate2'
-  , fromNominalDate2
-  , showU
-  , padU
-  , showSetOfDates2
-  , listFilling
-  , getInclusiveList )
-    
-import Data.Time.ISO8601.Extended.Parse
-  ( byNominalDate1
+  , byNominalDate1
   , byUnspecifiedDate1
   , byInterval1
   , byYear1
@@ -62,4 +62,8 @@ import Data.Time.ISO8601.Extended.Parse
   , bySignificandYear2
   , byYearDivision2
   , bySetOfDates2
-  , byDecade2 )
+  , byDecade2
+  ) where
+
+import Data.Time.ISO8601.Extended.Internal
+import Data.Time.ISO8601.Extended.Parse

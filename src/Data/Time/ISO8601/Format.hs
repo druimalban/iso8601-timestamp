@@ -41,6 +41,7 @@ showAltSign (Alt _ _ _) y
   | y >= 0    = "+"
   | otherwise = ""
 
+-- | Pretty-print the properties of the profile wrapping a given type, as well as its ISO 8601 representation.
 showProfilePretty :: ISO8601 (Profile t) => Show (Profile t) => Show t => Profile t -> String
 showProfilePretty profile =
   mconcat [ "Profile level: Profile | Any format extenstion: ", show (extension profile), " | "
@@ -242,10 +243,6 @@ instance ISO8601 (Profile NominalTime) where
   iso8601Parse = match . byNominalTime
 instance ISO8601 (Profile TimeOfDay) where
   iso8601Parse = match . byTimeOfDay
-instance ISO8601 (Profile LocalTime) where
-  iso8601Parse = match . byLocalTime
-instance ISO8601 (Profile ZonedTime) where
-  iso8601Parse = match . byZonedTime
 instance ISO8601 (Profile TimeStamp) where
   iso8601Parse = match . byTimeStamp
 instance ISO8601 (Profile ZonedTimeStamp) where

@@ -16,6 +16,7 @@ import Text.Regex.Applicative (RE)
 
 import Data.Time.ISO8601.TH 
 
+-- | Class of data types defined in ISO 8601. Given an agreed representation and a string to parse, attempt to parse a given type.
 class ISO8601 t where
   iso8601Parse :: Representation -> String -> Maybe t
 
@@ -37,15 +38,6 @@ data Representation =
 -- | Profile used for serilisation and parsing so that we know what the agreed profile is.
 data Profile t = Profile { extension :: Extension, representation :: Representation, value :: t }
 
-{-instance Show t => Show (Profile t) where
-  show (Profile ext repr val) =
-    mconcat [ "Profile { extension = "
-            , show ext
-            , ", representation = "
-            , show repr
-            , ", value = "
-            , show val , " }" ]
-  -}  
 instance Eq t => Eq (Profile t) where
   (==) (Profile extension representation value) (Profile extension' representation' value') =
     extension == extension' && representation == representation' && value == value'
@@ -230,7 +222,6 @@ roundFixedTo fracLength p = do
       n' | n < 0 = 0 | otherwise = n
       re  = toEnum p' / toEnum 10^n'
   toEnum (round' re * 10^n')
-
 
 padTo :: Show a => Integral a => Int -> a -> String
 padTo n toPad = padTo' n '0' toPad

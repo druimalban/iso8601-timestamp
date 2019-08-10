@@ -17,6 +17,8 @@ to the profile they implement.
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE TemplateHaskell #-}
 
+{-# OPTIONS_HADDOCK hide #-}
+
 module Data.Time.ISO8601.Extended.Internal where
 
 import Control.Monad
@@ -26,9 +28,7 @@ import Data.Time.LocalTime
 import Lens.Micro
 import Lens.Micro.TH
 
-import Data.Time.ISO8601.Format
 import Data.Time.ISO8601.Internal hiding (year, month, day)
-import Data.Time.ISO8601.Parse
 import Data.Time.ISO8601.TH
 
 {- | Define profile level 1 as a typeclass. Analogous to 'Data.Time.ISO8601.ISO8601'.
@@ -149,6 +149,7 @@ data Provenance t
   | Unreliable  { provenanceOf :: t }
   deriving Eq
 
+-- | Define a lens for 'Provenance'.
 makeLensesWith customRules ''Provenance
 
 -- | Convert a given annotation to a provenance using 
@@ -290,6 +291,8 @@ instance Functor Unspecified where
 instance Applicative Unspecified where
   pure  = return
   (<*>) = ap
+
+-- Write instance monad so that we can make use of sequence when considering lists of unspecified digits.
 instance Monad Unspecified where
   return p = Specified p
   (>>=) Unspecified   f = Unspecified

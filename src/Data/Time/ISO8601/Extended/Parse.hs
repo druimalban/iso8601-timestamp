@@ -2,6 +2,8 @@
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE FlexibleInstances #-}
 
+{-# OPTIONS_HADDOCK hide #-}
+
 module Data.Time.ISO8601.Extended.Parse where
 
 import Control.Monad (replicateM)

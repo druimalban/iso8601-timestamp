@@ -99,7 +99,7 @@ buildPico leading frac fracLength =
        frac'    = (MkFixed . toInteger) (frac * 10^(12 - fracLength)) :: Pico
      leading' + frac'
 
--- | Parse a time-zone according to ISO8601-1, section 4.2.5. ('Local time and Coordinated Universal Time (UTC)').
+-- | Parse a time-zone representation.
 byTimeZone :: Representation -> RE Char (Profile TimeZone)
 byTimeZone repr = utc <|> pos <|> neg where
   utc = sym 'Z' *> pure (Profile Basic repr (TimeZone 0 False ""))
@@ -118,6 +118,7 @@ byTimeZone repr = utc <|> pos <|> neg where
     m <- takeDigits 2
     pure $ Profile ext repr (TimeZone ((-1) * (60 * h + m)) False "")
 
+-- | Parse a time of day representation.
 byTimeOfDay :: Representation -> RE Char (Profile TimeOfDay)
 byTimeOfDay repr = run Basic <|> run Extended where
   run ext = do
@@ -128,7 +129,7 @@ byTimeOfDay repr = run Basic <|> run Extended where
     todSec  <- takePico 2 (fractionalLength repr)
     pure $ Profile ext repr TimeOfDay {..}
 
--- | Parse a time of day, according to ISO8601-1, section 4.2.2. ('Complete representations').
+-- | Parse a time of day, according to ISO 8601-1, section 4.2.2. ('Complete representations').
 byNominalTimeOfDay :: Representation -> RE Char (Profile NominalTime)
 byNominalTimeOfDay repr = run Basic <|> run Extended where
   run ext = do
@@ -139,7 +140,7 @@ byNominalTimeOfDay repr = run Basic <|> run Extended where
     todSec  <- takePico 2 (fractionalLength repr)
     pure $ Profile ext repr (NominalTime TimeOfDay {..})
 
--- | Parse a specific minute, according to ISO8601-1, section 4.2.3. ('Representations with reduced precision').
+-- | Parse a specific minute, according to ISO 8601-1, section 4.2.3. ('Representations with reduced precision').
 bySpecificMin :: Representation -> RE Char (Profile NominalTime)
 bySpecificMin repr = run Basic <|> run Extended where
   run ext = do
@@ -148,16 +149,15 @@ bySpecificMin repr = run Basic <|> run Extended where
     specificMin <- takePico 2 (fractionalLength repr)
     pure $ Profile ext repr (SpecificMin {..})
 
--- | Parse a specific hour, according to ISO8601-1, section 4.2.3. ('Representations with reduced precision').
+-- | Parse a specific hour, according to ISO 8601-1, section 4.2.3. ('Representations with reduced precision').
 bySpecificHour :: Representation -> RE Char (Profile NominalTime)
 bySpecificHour repr = Profile <$> pure Basic <*> pure repr <*> (SpecificHour <$> takePico 2 (fractionalLength repr))
 
--- | Parse a nominal time representation as in ISO8601-1, section 4.2. ('Time of day').
+-- | Parse a nominal time representation as in ISO 8601-1, section 4.2. ('Time of day').
 byNominalTime :: Representation -> RE Char (Profile NominalTime)
 byNominalTime repr = byNominalTimeOfDay repr <|> bySpecificHour repr <|> bySpecificMin repr
---
 
--- | Parse a time-stamp according to ISO8601-1, section 4.3. ('Date and time of a day').
+-- | Parse a time-stamp according to ISO 8601-1, section 4.3. ('Date and time of a day').
 byTimeStamp :: Representation -> RE Char (Profile TimeStamp)
 byTimeStamp repr = do
   someDate <- byNominalDate repr
@@ -165,17 +165,18 @@ byTimeStamp repr = do
   someTime <- byNominalTime repr
   pure $ Profile (getExt (extension someDate) (extension someTime)) repr (TimeStamp (value someDate) (value someTime))
 
+-- | Parse a time-stamp representation with a time-zone representation appended to it.
 byZonedTimeStamp :: Representation -> RE Char (Profile ZonedTimeStamp)
 byZonedTimeStamp repr = do
   someTimeStamp <- byTimeStamp repr
   someTimeZone  <- byTimeZone  repr
   pure $ Profile (getExt (extension someTimeStamp) (extension someTimeZone)) repr (ZonedTimeStamp (value someTimeStamp) (value someTimeZone))
 
--- | Parse a time-stamp of some number of weeks, according to ISO8601-1, section 4.4.3.2. ('Format with designators').
+-- | Parse a time-stamp of some number of weeks, according to ISO 8601-1, section 4.4.3.2. ('Format with designators').
 byCalendarDiffWeeks :: Representation -> RE Char (Profile Duration)
 byCalendarDiffWeeks repr = Profile <$> pure Basic <*> pure repr <*> (DiffWeeks <$> (sym 'P' *> decimal <* sym 'W'))
 
--- | Parse a full time-stamp with yearly, monthly, daily, hourly, minutely, and secondly components, according to ISO8601-1, section 4.4.3.2. ('Format with designators').
+-- | Parse a full time-stamp with yearly, monthly, daily, hourly, minutely, and secondly components, according to ISO 8601-1, section 4.4.3.2. ('Format with designators').
 byCalendarDiffTime :: Representation -> RE Char (Profile Duration)
 byCalendarDiffTime repr
   | isRegular repr = do
@@ -236,7 +237,7 @@ byDiffHoursMins repr = hms repr <|> hm repr <|> h repr where
     diffHours <- toInteger <$> decimal <* sym 'H'
     pure $ Profile Basic repr DiffHours {..}
 
--- | Parse a reduced accuracy duration representation. Please see ISO8601-1, section 4.4.3.2. ('Format with designators'), rule a).
+-- | Parse a reduced accuracy duration representation. Please see ISO 8601-1, section 4.4.3.2. ('Format with designators'), rule a).
 byShortDuration :: Representation -> RE Char (Profile Duration)
 byShortDuration repr = full repr <|> demi repr where
   full repr = do
@@ -250,12 +251,12 @@ byShortDuration repr = full repr <|> demi repr where
     diffYMD <- value <$> byDiffYearsMonths repr
     pure $ Profile Basic repr (ShortDuration { diffHMS = DiffHours 0, .. })
     
--- | Parse a duration according to ISO8601-1, section 4.4.3. ('Duration').
+-- | Parse a duration according to ISO 8601-1, section 4.4.3. ('Duration').
 byDuration :: Representation -> RE Char (Profile Duration)
 byDuration repr = byCalendarDiffWeeks repr <|> byCalendarDiffTime repr <|> byShortDuration repr
 ------
 
--- | Parse a calendar date according to ISO8601-1, section 4.1.2.2. ('Complete representations').
+-- | Parse a calendar date according to ISO 8601-1, section 4.1.2.2. ('Complete representations').
 byCalendarDate :: Representation -> RE Char (Profile NominalDate)
 byCalendarDate repr = run Basic <|> run Extended where
   run ext = do
@@ -266,7 +267,7 @@ byCalendarDate repr = run Basic <|> run Extended where
     someDay   <- takeDigits 2
     pure $ Profile ext repr (CalendarDate (fromGregorian someYear someMonth someDay))
 
--- | Parse a weekly date according to ISO8601-1, section 4.1.3. ('Ordinal date').
+-- | Parse a weekly date according to ISO 8601-1, section 4.1.3. ('Ordinal date').
 byWeeklyDate :: Representation -> RE Char (Profile NominalDate)
 byWeeklyDate repr = run Basic <|> run Extended where
   run ext = do
@@ -278,7 +279,7 @@ byWeeklyDate repr = run Basic <|> run Extended where
     someWeekDay <- digit
     pure $ Profile ext repr (WeeklyDate (fromWeekDate (someYear) someWeek someWeekDay))
 
--- | Parse an ordinal date according to ISO8601-1, section 4.1.4 ('Week date').
+-- | Parse an ordinal date according to ISO 8601-1, section 4.1.4 ('Week date').
 byOrdinalDate :: Representation -> RE Char (Profile NominalDate)
 byOrdinalDate repr = run Basic <|> run Extended where
   run ext = do
@@ -287,7 +288,7 @@ byOrdinalDate repr = run Basic <|> run Extended where
     someOrdDay <- takeDigits 3
     pure $ Profile ext repr (OrdinalDate (fromOrdinalDate (someYear) someOrdDay))
 
--- | Parse a specific month according to ISO8601-1, section 4.1.2.3. ('Representations with reduced precision').
+-- | Parse a specific month according to ISO 8601-1, section 4.1.2.3. ('Representations with reduced precision').
 bySpecificMonth :: Representation -> RE Char (Profile NominalDate)
 bySpecificMonth repr = run Basic <|> run Extended where
   run ext = do
@@ -296,7 +297,7 @@ bySpecificMonth repr = run Basic <|> run Extended where
     someMonth <- takeDigits 2
     pure $ Profile ext repr (SpecificMonth (someYear) someMonth)
 
--- | Parse a specific week according to ISO8601-1, section 4.1.2.3. ('Representations with reduced precision').
+-- | Parse a specific week according to ISO 8601-1, section 4.1.2.3. ('Representations with reduced precision').
 bySpecificWeek :: Representation -> RE Char (Profile NominalDate)
 bySpecificWeek repr = run Basic <|> run Extended where
   run ext = do
@@ -306,36 +307,23 @@ bySpecificWeek repr = run Basic <|> run Extended where
     someWeek <- takeDigits 2
     pure $ Profile ext repr (SpecificWeek (someYear) someWeek)
 
--- | Parse a specific year accoridng to ISO8601-1, section 4.1.2.3. ('Representations with reduced precision').
+-- | Parse a specific year accoridng to ISO 8601-1, section 4.1.2.3. ('Representations with reduced precision').
 bySpecificYear :: Representation -> RE Char (Profile NominalDate)
 bySpecificYear repr = Profile <$> pure Basic <*> pure repr <*>
                                 (SpecificYear <$> byYear 4 repr)
 
--- | Parse a specific year according to ISO8601-1, section 4.1.2.3. ('Representations with reduced precision').
+-- | Parse a specific year according to ISO 8601-1, section 4.1.2.3. ('Representations with reduced precision').
 bySpecificCentury :: Representation -> RE Char (Profile NominalDate)
 bySpecificCentury repr = Profile <$> pure Basic <*> pure repr <*>
                                    (SpecificCentury <$> byYear 2 repr)
 
--- | Parse any of the nominal date representations defined in ISO8601-1, section 4.1. ('Date').
+-- | Parse any of the nominal date representations defined in ISO 8601-1, section 4.1. ('Date').
 byNominalDate :: Representation -> RE Char (Profile NominalDate)
 byNominalDate repr = bySpecificCentury repr <|> bySpecificYear repr <|> bySpecificMonth repr <|>
                      byOrdinalDate repr <|> byWeeklyDate repr <|> byCalendarDate repr <|>
                      bySpecificWeek repr
-------
 
---byLocalTime :: Int -> Int -> RE Char LocalTime
---byLocalTime agreedLength fracLength = LocalTime <$> (byCalendarDate agreedLength <|> byOrdinalDate agreedLength <|> byWeeklyDate agreedLength) <* sym 'T' <*> byTimeOfDay fracLength
-
-byLocalTime :: Representation -> RE Char (Profile LocalTime)
-byLocalTime repr = undefined
-
---byZonedTime :: Int -> Int -> RE Char ZonedTime
---byZonedTime agreedLength fracLength = ZonedTime <$> byLocalTime agreedLength fracLength <*> byTimeZone
-
-byZonedTime :: Representation -> RE Char (Profile ZonedTime)
-byZonedTime repr = undefined
-
--- | Parse an interval representation according to ISO8601-1, section 4.4. ('Time interval') and ISO8601-1, section 4.4.4. ('Complete representations').
+-- | Parse an interval representation according to ISO 8601-1, section 4.4. ('Time interval') and ISO 8601-1, section 4.4.4. ('Complete representations').
 byInterval :: Representation -> RE Char (Profile Interval)
 byInterval repr = byInterval' <|> byFromTime <|> byToTime <|> byOverDuration where
   getExt Extended _  = Extended
@@ -368,7 +356,7 @@ byInterval repr = byInterval' <|> byFromTime <|> byToTime <|> byOverDuration whe
     someDuration  <- byDuration repr
     pure $ Profile (extension someDuration) repr (OverDuration (value someDuration))
            
--- | Parse a recurring time interval according to ISO8601-1, section 4.5. ('Recurring time interval').
+-- | Parse a recurring time interval according to ISO 8601-1, section 4.5. ('Recurring time interval').
 byRepeat :: Representation -> RE Char (Profile Repeat)
 byRepeat repr = repeatN <|> repeatForever where
   repeatN = do

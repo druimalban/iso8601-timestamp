@@ -72,12 +72,55 @@ There's one more function we can use to show the profile being wrapped:
 "Profile level: Main | Any format extenstion: Extended | Representation: Regular {fractionalLength = 3, delimiter = ,} | Wrapped type: NominalTime {timeOfDay = 12:32:34.33} | ISO 8601-1 representation: 12:32:34,330"
 -}
 
-module Data.Time.ISO8601 (
-    module Data.Time.ISO8601.Internal
-  , module Data.Time.ISO8601.Format
-  , module Data.Time.ISO8601.Parse
-  ) where
+module Data.Time.ISO8601
+  ( ISO8601 (..)
+  , Extension (..)
+  , Representation (..)
+  , Profile (..)
+  , Delim (..)
+  , NominalDate (..)
+  , NominalTime (..)
+  , TimeStamp (..)
+  , ZonedTimeStamp (..)
+  , AcrossYMD (..)
+  , AcrossHMS (..)
+  , Duration (..)
+  , Interval (..)
+  , Repeat (..)
+  , getNominalDiffTime 
+  , fromNominalDiffTime
+  , fromNominalDiffTime'
+  , roundFixedTo
+  , bestRepresentation
+  , getMonths
 
-import Data.Time.ISO8601.Internal hiding (between, isRegular, omitDesignator, padFixedTo, padTo, getExt)
-import Data.Time.ISO8601.Format hiding (dash, colon, showAltSign)
-import Data.Time.ISO8601.Parse hiding (takeDigits, withExtension, byYear, takePico, takePico', buildPico, checkRepresentation)
+  , showProfilePretty
+
+  , byTimeZone
+  , byTimeOfDay
+  , byNominalTimeOfDay
+  , bySpecificMin
+  , bySpecificHour
+  , byNominalTime
+  , byTimeStamp
+  , byZonedTimeStamp
+  , byCalendarDiffWeeks
+  , byCalendarDiffTime
+  , byShortDuration
+  , byDuration
+  , byDiffYearsMonths
+  , byDiffHoursMins
+  , byCalendarDate
+  , byWeeklyDate
+  , byOrdinalDate
+  , bySpecificMonth
+  , bySpecificWeek
+  , bySpecificYear
+  , bySpecificCentury
+  , byNominalDate
+  , byInterval
+  , byRepeat ) where
+
+import Data.Time.ISO8601.Internal
+import Data.Time.ISO8601.Format
+import Data.Time.ISO8601.Parse
